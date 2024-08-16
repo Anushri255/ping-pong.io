@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ping Pong</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #111;
+            flex-direction: column;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background-color: #333;
+            border: 3px solid #fff;
+            display: none;
+        }
+
+        .paddle {
+            position: absolute;
+            width: 15px;
+            height: 100px;
+            background-color: #eaeaea;
+        }
+
+        #paddleLeft {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #paddleRight {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #ball {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #f9f9f9;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #difficultyMenu {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #difficultyMenu button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #missedHits {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="difficultyMenu">
+        <h1>Select Difficulty</h1>
+        <button onclick="startGame('easy')">Easy</button>
+        <button onclick="startGame('medium')">Medium</button>
+        <button onclick="startGame('hard')">Hard</button>
+    </div>
+
+    <div id="missedHits">
+        Missed Hits: <span id="scoreRight">0</span>
+    </div>
+
+    <div id="gameContainer">
+        <div id="paddleLeft" class="paddle"></div>
+        <div id="paddleRight" class="paddle"></div>
+        <div id="ball"></div>
+    </div>
+
+    <script>
+        const gameArea = document.getElementById('gameContainer');
+        const paddle1 = document.getElementById('paddleLeft');
+        const paddle2 = document.getElementById('paddleRight');
+        const ball = document.getElementById('ball');
+        const scoreRight = document.getElementById('scoreRight');
+
+        let ballX = 390, ballY = 290;
+        let ballSpeedX, ballSpeedY;
+        let paddle1Y = 250, paddle2Y = 250;
+        const paddleSpeed = 20;
+        let gameHeight, gameWidth;
+        let rightScore = 0;
+
+        function startGame(difficulty) {
+            const difficultyMenu = document.getElementById('difficultyMenu');
+            difficultyMenu.style.display = 'none';
+            gameArea.style.display = 'block';
+
+            gameHeight = gameArea.offsetHeight;
+            gameWidth = gameArea.offsetWidth;
+
+            if (difficulty === 'easy') {
+                ballSpeedX = 4;
+                ballSpeedY = 4;
+            } else if (difficulty === 'medium') {
+                ballSpeedX = 6;
+                ballSpeedY = 6;
+            } else if (difficulty === 'hard') {
+                ballSpeedX = 8;
+                ballSpeedY = 8;
+            }
+
+            resetBall();
+
+            gameLoop();
+        }
+
+        function moveBall() {
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            if (ballY <= 0 || ballY >= gameHeight - 20) {
+                ballSpeedY *= -1;
+            }
+
+            if (
+                (ballX <= 15 && ballY >= paddle1Y && ballY <= paddle1Y + 100) ||
+                (ballX >= gameWidth - 35 && ballY >= paddle2Y && ballY <= paddle2Y + 100)
+            ) {
+                ballSpeedX *= -1;
+            }
+
+
+            if (ballX <= 0) {
+                resetBall(); 
+            } else if (ballX >= gameWidth - 20) {
+                rightScore++;
+                updateScore();
+                resetBall();
+            }
+
+            ball.style.left = `${ballX}px`;
+
+            ball.style.top = `${ballY}px`;
+        }
+
+        function movePaddle1(direction) {
+            paddle1Y += direction * paddleSpeed;
+            paddle1Y = Math.max(Math.min(paddle1Y, gameHeight - 100), 0);
+            
+            paddle1.style.top = `${paddle1Y}px`;
+        }
+
+        function movePaddle2(direction) {
+            paddle2Y += direction * paddleSpeed;
+            paddle2Y = Math.max(Math.min(paddle2Y, gameHeight - 100), 0);
+            paddle2.style.top = `${paddle2Y}px`;
+        }
+
+        function resetBall() {
+            ballX = gameWidth / 2 - 10;
+            ballY = gameHeight / 2 - 10;
+            ballSpeedX *= -1;
+        }
+
+        function updateScore() {
+            scoreRight.textContent = rightScore;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'w':
+                    movePaddle1(-1);
+                    break;
+                case 's':
+                    movePaddle1(1);
+                    break;
+                case 'ArrowUp':
+                    movePaddle2(-1);
+                    break;
+                case 'ArrowDown':
+                    movePaddle2(1);
+                    break;
+            }
+        });
+
+        function gameLoop() {
+            moveBall();
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+
+
+</body>
+</html>
